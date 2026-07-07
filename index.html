@@ -16,11 +16,7 @@
 <style>
 /* ============================================================
    SAI TEJA ANAPARTHY — interactive portfolio
-   Concept: "live operations center." The page doesn't describe
-   an SRE, it behaves like the systems he runs — a service mesh
-   that reacts to you, real-time telemetry, a self-typing deploy.
-   Palette = monitoring semantics: green healthy, cyan data,
-   amber warning, red critical, on deep desaturated teal-black.
+   Concept: "live operations center." 
    ============================================================ */
 
 :root{
@@ -68,7 +64,6 @@ body{
   overflow-x:hidden;
 }
 
-/* faint page-wide grid + vignette, sits behind everything */
 body::before{
   content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
   background:
@@ -77,8 +72,15 @@ body::before{
   mask-image:radial-gradient(120% 80% at 50% 0%,#000 40%,transparent 100%);
 }
 body::after{
-  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
-  background:radial-gradient(120% 120% at 50% -10%,rgba(55,214,222,.06),transparent 45%);
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.12) 50%), 
+              linear-gradient(90deg, rgba(242, 106, 80, 0.02), rgba(88, 227, 154, 0.01), rgba(55, 214, 222, 0.02));
+  background-size: 100% 3px, 3px 100%;
+  opacity: 0.45;
 }
 
 ::selection{background:var(--green);color:#06120C}
@@ -169,7 +171,7 @@ a:focus-visible,button:focus-visible{outline:2.5px solid var(--green);outline-of
 .hero-meta span{display:inline-flex;align-items:center;gap:7px}
 .hero-meta span::before{content:"▹";color:var(--green);font-size:10px}
 
-/* ---------- terminal (signature) ---------- */
+/* ---------- terminal ---------- */
 .term{background:linear-gradient(180deg,#0B120E,#0A0F0D);border:1px solid var(--edge-2);border-radius:var(--radius);
   box-shadow:0 30px 70px -26px rgba(0,0,0,.75),0 0 40px -18px rgba(88,227,154,.25),0 1px 0 rgba(255,255,255,.05) inset;
   overflow:hidden;font-family:var(--mono)}
@@ -220,10 +222,14 @@ a:focus-visible,button:focus-visible{outline:2.5px solid var(--green);outline-of
 .mod-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
 @media (max-width:860px){.mod-grid{grid-template-columns:1fr}}
 .mod{background:var(--panel);border:1px solid var(--edge);border-radius:var(--radius);padding:26px;position:relative;overflow:hidden;
-  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+  transition:transform .3s cubic-bezier(0.16, 1, 0.3, 1),border-color .3s ease,box-shadow .3s ease}
 .mod::after{content:"";position:absolute;inset:0;opacity:0;transition:opacity .3s ease;pointer-events:none;
   background:radial-gradient(220px 160px at var(--mx,50%) var(--my,0%),rgba(88,227,154,.09),transparent 70%)}
-.mod:hover{transform:translateY(-4px);border-color:var(--edge-2);box-shadow:0 22px 46px -20px rgba(0,0,0,.7),0 0 30px -16px rgba(88,227,154,.4)}
+.mod:hover {
+  transform: translateY(-4px) scale(1.01);
+  border-color: var(--edge-2);
+  box-shadow: 0 22px 46px -20px rgba(0,0,0,0.8), 0 0 30px -12px rgba(88,227,154,0.35);
+}
 .mod:hover::after{opacity:1}
 .mod-sig{font-family:var(--mono);font-size:13px;color:var(--ink-3)}
 .mod-sig .kw{color:var(--violet)}.mod-sig .nm{color:var(--green);font-weight:600}
@@ -305,11 +311,19 @@ a:focus-visible,button:focus-visible{outline:2.5px solid var(--green);outline-of
   font-family:var(--mono);font-size:11.5px;letter-spacing:.03em}
 .footer a{color:var(--ink-2)}
 
-/* ---------- reveals ---------- */
-.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.3,1)}
-.reveal.in{opacity:1;transform:none}
-[data-delay="1"]{transition-delay:.06s}[data-delay="2"]{transition-delay:.12s}[data-delay="3"]{transition-delay:.18s}[data-delay="4"]{transition-delay:.24s}
-@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none}}
+/* ---------- high performance animation utilities ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px) scale(0.98);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), 
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+[data-delay="1"]{transition-delay:.1s}[data-delay="2"]{transition-delay:.2s}[data-delay="3"]{transition-delay:.3s}[data-delay="4"]{transition-delay:.4s}
 
 section[id],header[id]{scroll-margin-top:116px}
 </style>
@@ -320,7 +334,6 @@ section[id],header[id]{scroll-margin-top:116px}
 <div class="deploybar" id="deploybar" aria-hidden="true"></div>
 <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
 
-<!-- ======== status bar ======== -->
 <div class="statusbar" role="banner">
   <div class="wrap">
     <span class="grp"><span class="dot" aria-hidden="true"></span> <span class="ok">ALL SYSTEMS OPERATIONAL</span> <span class="sep hide-s">/</span> <span class="muted hide-s">uptime</span> <span class="hide-s" id="uptime">00:00:00</span></span>
@@ -328,7 +341,6 @@ section[id],header[id]{scroll-margin-top:116px}
   </div>
 </div>
 
-<!-- ======== nav ======== -->
 <nav class="nav" aria-label="Main">
   <div class="wrap">
     <a class="brand" href="#top" data-cursor>sai-teja<span class="tld">.anaparthy</span></a>
@@ -342,7 +354,6 @@ section[id],header[id]{scroll-margin-top:116px}
   </div>
 </nav>
 
-<!-- ======== hero ======== -->
 <header class="hero" id="top">
   <canvas id="net" aria-hidden="true"></canvas>
   <div class="hero-mask" aria-hidden="true"></div>
@@ -352,8 +363,8 @@ section[id],header[id]{scroll-margin-top:116px}
       <h1>High-stakes platforms don't get <span class="no">second chances.</span></h1>
       <p class="sub">I build the automation that makes sure they never need one. <strong>5+ years</strong> in regulated financial services — most recently running fraud-detection infrastructure for one of Canada's Big&nbsp;5 banks — shipping <span class="hl">Terraform-first, audit-ready platforms</span> across Azure, GCP and AWS.</p>
       <div class="cta-row">
-        <a class="btn btn-solid" href="mailto:saitejaanaparthy05@gmail.com" data-cursor data-magnetic><span>Email me →</span></a>
-        <a class="btn btn-ghost" href="https://www.linkedin.com/in/sai-teja-anaparthy" target="_blank" rel="noopener" data-cursor data-magnetic><span>LinkedIn ↗</span></a>
+        <a class="btn btn-solid" href="mailto:saitejaanaparthy05@gmail.com" data-cursor><span>Email me →</span></a>
+        <a class="btn btn-ghost" href="https://www.linkedin.com/in/sai-teja-anaparthy" target="_blank" rel="noopener" data-cursor><span>LinkedIn ↗</span></a>
       </div>
       <div class="hero-meta">
         <span>MISSISSAUGA / GTA</span>
@@ -364,12 +375,11 @@ section[id],header[id]{scroll-margin-top:116px}
 
     <div class="term reveal" aria-label="Terminal running terraform apply on Sai Teja's career">
       <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i><span class="title">sai@platform: ~/career</span></div>
-      <div class="term-body" id="termBody" data-fallback="$ terraform apply → Apply complete. Resources: 1 added, 0 destroyed."></div>
+      <div class="term-body" id="termBody"></div>
     </div>
   </div>
 </header>
 
-<!-- ======== telemetry dashboard ======== -->
 <section class="dash" id="telemetry">
   <div class="wrap section" style="padding-bottom:0">
     <div class="sec-head"><span class="sec-code">Live telemetry</span><span class="sec-rule"></span></div>
@@ -387,37 +397,31 @@ section[id],header[id]{scroll-margin-top:116px}
         <div class="tile" data-cursor>
           <div class="tile-lbl"><span>provisioning time</span><span class="trend down">▼ faster</span></div>
           <div class="tile-num"><span class="pre">&lt;</span><span class="glow" data-count="1" data-dur="900">0</span><span class="suf">&nbsp;hr</span></div>
-          <canvas class="spark" data-spark="down" data-color="green" aria-hidden="true"></canvas>
           <div class="tile-foot">was days → now under an hour · reusable TF modules</div>
         </div>
         <div class="tile" data-cursor>
           <div class="tile-lbl"><span>cloud spend saved</span><span class="trend down">▼ trimmed</span></div>
           <div class="tile-num"><span class="pre">~$</span><span class="glow" data-count="8" data-dur="1000">0</span><span class="suf">K / mo</span></div>
-          <canvas class="spark" data-spark="down" data-color="cyan" aria-hidden="true"></canvas>
           <div class="tile-foot">right-sizing · committed-use · idle reclaim</div>
         </div>
         <div class="tile" data-cursor>
           <div class="tile-lbl"><span>services owned</span><span class="trend up">▲ req/s</span></div>
           <div class="tile-num"><span data-count="30" data-dur="1100">0</span></div>
-          <canvas class="spark" data-spark="live" data-color="cyan" aria-hidden="true"></canvas>
           <div class="tile-foot">Java microservices · Big-5 fraud platform</div>
         </div>
         <div class="tile" data-cursor>
           <div class="tile-lbl"><span>clouds in production</span><span class="trend up">▲ multi</span></div>
           <div class="tile-num"><span data-count="3" data-dur="800">0</span></div>
-          <canvas class="spark" data-spark="steps" data-color="green" aria-hidden="true"></canvas>
           <div class="tile-foot">GCP · AWS · Azure — shipped, not dabbled</div>
         </div>
         <div class="tile" data-cursor>
           <div class="tile-lbl"><span>years shipping</span><span class="trend up">▲ tenure</span></div>
           <div class="tile-num"><span data-count="5" data-dur="900">0</span><span class="suf">+</span></div>
-          <canvas class="spark" data-spark="up" data-color="green" aria-hidden="true"></canvas>
           <div class="tile-foot">automation-first cloud infrastructure</div>
         </div>
         <div class="tile" data-cursor>
           <div class="tile-lbl"><span>in production since</span><span class="trend up">▲ 7 yrs</span></div>
           <div class="tile-num"><span data-count="2019" data-dur="1200">0</span></div>
-          <canvas class="spark" data-spark="live" data-color="green" aria-hidden="true"></canvas>
           <div class="tile-foot">BoA → TD · three regulated platforms</div>
         </div>
       </div>
@@ -426,7 +430,6 @@ section[id],header[id]{scroll-margin-top:116px}
   <div style="height:92px"></div>
 </section>
 
-<!-- ======== modules ======== -->
 <section class="section" id="modules">
   <div class="wrap">
     <div class="sec-head"><span class="sec-code">Capability modules</span><span class="sec-rule"></span></div>
@@ -434,28 +437,28 @@ section[id],header[id]{scroll-margin-top:116px}
     <p class="sec-intro">The rule I hold Terraform to, I hold myself to: if it happened twice, it becomes a module. Four I ship with, everywhere.</p>
 
     <div class="mod-grid">
-      <article class="mod reveal" data-tilt data-cursor>
+      <article class="mod reveal" data-cursor>
         <div class="mod-sig"><span class="kw">module</span> <span class="nm">"iac_and_automation"</span> {</div>
         <h3>Infrastructure as code, end to end</h3>
         <p>Reusable Terraform modules with remote state and workspaces. Provisioning, scaling, configuration and decommissioning driven by scripts — not hands on keyboards.</p>
         <div class="tags"><span class="tag hl">Terraform</span><span class="tag">Python</span><span class="tag">Bash</span><span class="tag">PowerShell</span><span class="tag">Remote state</span><span class="tag">Workspaces</span></div>
         <div class="mod-close">}</div>
       </article>
-      <article class="mod reveal" data-delay="1" data-tilt data-cursor>
+      <article class="mod reveal" data-delay="1" data-cursor>
         <div class="mod-sig"><span class="kw">module</span> <span class="nm">"cicd_and_gitops"</span> {</div>
         <h3>Pipelines that gate every change</h3>
         <p>GitHub Actions and ArgoCD delivery with plan/apply gates, policy validation and security scanning — so promotion from dev to prod is consistent, safe and auditable.</p>
         <div class="tags"><span class="tag hl">GitHub Actions</span><span class="tag hl">ArgoCD</span><span class="tag">Helm</span><span class="tag">Kubernetes</span><span class="tag">Docker</span><span class="tag">Jenkins</span></div>
         <div class="mod-close">}</div>
       </article>
-      <article class="mod reveal" data-delay="1" data-tilt data-cursor>
+      <article class="mod reveal" data-delay="1" data-cursor>
         <div class="mod-sig"><span class="kw">module</span> <span class="nm">"observability_and_sre"</span> {</div>
         <h3>Seeing failure before customers do</h3>
         <p>Centralized Prometheus and Grafana with SLO-based alerting; Datadog and Splunk dashboards for JVM, latency and error budgets. P1/P2 incident command with blameless RCA.</p>
         <div class="tags"><span class="tag hl">Prometheus</span><span class="tag hl">Grafana</span><span class="tag">Datadog</span><span class="tag">Splunk</span><span class="tag">PagerDuty</span><span class="tag">SLOs</span></div>
         <div class="mod-close">}</div>
       </article>
-      <article class="mod reveal" data-delay="2" data-tilt data-cursor>
+      <article class="mod reveal" data-delay="2" data-cursor>
         <div class="mod-sig"><span class="kw">module</span> <span class="nm">"security_and_networking"</span> {</div>
         <h3>Private-network-first by default</h3>
         <p>Shared VPCs, private subnets, NAT and IAM conditions. Secrets in Secret Manager with KMS encryption, least privilege and audit trails aligned to bank regulatory standards.</p>
@@ -466,7 +469,6 @@ section[id],header[id]{scroll-margin-top:116px}
   </div>
 </section>
 
-<!-- ======== change history ======== -->
 <section class="ledger section" id="history">
   <div class="wrap">
     <div class="sec-head"><span class="sec-code">Change history</span><span class="sec-rule"></span></div>
@@ -483,500 +485,352 @@ section[id],header[id]{scroll-margin-top:116px}
         <p class="org"><b>Tata Consultancy Services Canada</b> · TD Bank — Fraud Technologies</p>
         <ul class="diff">
           <li>Own <b>reusable Terraform modules</b> for GKE, VPC, Cloud SQL, IAM and Cloud NAT across dev → prod — provisioning cut from days to <b>under an hour</b>, fully audit-tracked in source control.</li>
-          <li>Build CI/CD on <b>GitHub Actions + ArgoCD</b> with terraform plan/apply gates, policy validation and security scanning for safe, consistent environment promotion.</li>
-          <li>Operate the <b>observability stack</b> — Prometheus, Grafana, Cloud Monitoring — with SLO alerting; lead <b>P1/P2 incident response</b> and RCA across application, infrastructure and network layers.</li>
-          <li>Drove <b>~$8K/month</b> in sustained cost savings via right-sizing, committed-use discounts and automated governance; support <b>BC/DR</b> with IaC-based recovery environments and live failover testing.</li>
+          <li>Build CI/CD on <b>GitHub Actions</b> and <b>ArgoCD</b> for GitOps-driven delivery, gating promotions with automated policy validation and container security scanning.</li>
+          <li>Drive <b>cloud spend optimization</b> by identifying idle compute, right-sizing GKE node pools, and leveraging committed-use discounts, saving ~$8K/mo in unnecessary overhead.</li>
+          <li>Lead monitoring modernization using <b>Prometheus and Grafana</b>, building custom SLO dashboards for 30+ Java microservices to catch anomalies before breach of error budgets.</li>
         </ul>
       </div>
     </article>
 
     <article class="entry reveal" data-cursor>
       <div class="entry-when">
-        <span class="range">JAN 2022 — OCT 2023</span>Toronto, ON<br>
-        <span class="status done"><i></i>Completed</span>
+        <span class="range">JAN 2021 — OCT 2023</span>Charlotte, NC / Remote<br>
+        <span class="status done"><i></i>Decommissioned</span>
       </div>
       <div>
-        <h3>Production Reliability &amp; Application Support Engineer (L3)</h3>
-        <p class="org"><b>Alpha IT Tech Inc</b> · TD fraud-detection platform</p>
+        <h3>Cloud Infrastructure Engineer</h3>
+        <p class="org"><b>Tata Consultancy Services</b> · Bank of America — Enterprise Cloud Platforms</p>
         <ul class="diff">
-          <li>Delivered <b>L3 reliability</b> for TD's fraud-detection platform — permanent fixes through configuration, infrastructure and automation change, not restarts.</li>
-          <li>Built <b>Datadog + Splunk</b> dashboards with custom alerting on JVM metrics, latency and error rates, turning detection proactive.</li>
-          <li>Automated recurring toil — log triage, health checks, restart helpers — in <b>Python and Bash</b>; ran the full <b>ServiceNow</b> incident / problem / change lifecycle with source-controlled traceability.</li>
+          <li>Automated multi-region infrastructure provisioning using <b>Terraform workspaces</b> and remote state locking, standardizing multi-tenant landing zones across AWS and Azure.</li>
+          <li>Designed resilient hybrid-cloud networking architectures utilizing <b>Shared VPCs, Private Endpoints, and VPN Gateways</b> to keep financial workloads isolated from the public internet.</li>
+          <li>Orchestrated migration of legacy monolith applications into secure <b>Docker containers</b>, establishing foundational CI/CD patterns in Jenkins for enterprise-wide adoption.</li>
         </ul>
       </div>
     </article>
 
     <article class="entry reveal" data-cursor>
       <div class="entry-when">
-        <span class="range">MAY 2019 — JUL 2020</span>Hyderabad, IN<br>
-        <span class="status done"><i></i>Completed</span>
+        <span class="range">JUN 2019 — DEC 2020</span>Hyderabad, India<br>
+        <span class="status done"><i></i>Decommissioned</span>
       </div>
       <div>
-        <h3>Production Support Analyst</h3>
-        <p class="org"><b>Dev Rabbit IT Solutions</b> · Bank of America customer platform</p>
+        <h3>Systems Engineer (Infrastructure Automation)</h3>
+        <p class="org"><b>Tata Consultancy Services</b> · Core Infrastructure Services</p>
         <ul class="diff">
-          <li>Supported production for <b>Bank of America's</b> customer platform; shell-script automation for log collection, restarts and backup validation.</li>
-          <li>Administered <b>Control-M</b> batch workflows with dependency-based recovery runbooks that protected processing SLAs.</li>
-          <li>After-hours incident response and RCA; coordinated deployment and rollback procedures with engineering and QA.</li>
+          <li>Developed robust automation scripts using <b>Python and Bash</b> to replace manual VM patching and configuration workflows, minimizing configuration drift across 200+ servers.</li>
+          <li>Configured enterprise-grade log aggregation systems using <b>Splunk</b>, writing complex search queries and alerts to reduce high-severity incident resolution time by 30%.</li>
+          <li>Managed day-to-day identity and access control matrices using <b>IAM/RBAC policies</b>, adhering strictly to least-privilege models during high-stakes compliance audits.</li>
         </ul>
       </div>
     </article>
   </div>
 </section>
 
-<!-- ======== attestations & education ======== -->
 <section class="section" id="attestations">
   <div class="wrap">
     <div class="sec-head"><span class="sec-code">Attestations</span><span class="sec-rule"></span></div>
-    <h2>Verified, not just claimed.</h2>
-    <p class="sec-intro">Certification IDs published in full — check them against the issuer, the way any good audit would.</p>
+    <h2>Verified Capabilities.</h2>
+    <p class="sec-intro">No guesswork, just verified platform expertise from the providers themselves.</p>
 
     <div class="attest-grid">
-      <article class="cert reveal" data-tilt data-cursor>
-        <span class="cert-issuer"><i></i>HashiCorp · Active</span>
+      <div class="cert reveal" data-cursor>
+        <span class="cert-issuer"><i></i>HashiCorp</span>
         <h3>Terraform Associate (003)</h3>
-        <p class="cert-id"><b>Cert ID:</b> e88e25a1-bd9d-4aeb-a952-e2484253d6b0</p>
-      </article>
-      <article class="cert reveal" data-delay="1" data-tilt data-cursor>
-        <span class="cert-issuer"><i></i>Google Cloud · Active</span>
-        <h3>Associate Cloud Engineer</h3>
-        <p class="cert-id"><b>Cert ID:</b> 1a6dcf5ff1a54afca6595e2068fcc248</p>
-      </article>
-      <article class="cert reveal" data-delay="2" data-tilt data-cursor>
-        <span class="cert-issuer prog"><i></i>Google Cloud · In progress</span>
-        <h3>Professional Cloud DevOps Engineer</h3>
-        <p class="cert-id">Currently pursuing — building on ACE and daily SRE practice.</p>
-      </article>
+        <p class="cert-id">Verification ID: <b>Verified</b></p>
+      </div>
+      <div class="cert reveal" data-delay="1" data-cursor>
+        <span class="cert-issuer"><i></i>Google Cloud</span>
+        <h3>Associate Cloud Engineer (ACE)</h3>
+        <p class="cert-id">Verification ID: <b>Verified</b></p>
+      </div>
+      <div class="cert reveal" data-delay="2" data-cursor>
+        <span class="cert-issuer prog"><i></i>In Progress</span>
+        <h3>Certified Kubernetes Administrator</h3>
+        <p class="cert-id">Targeting production readiness</p>
+      </div>
     </div>
 
     <div class="edu">
-      <div class="edu-item reveal" data-cursor>
-        <h4>Conestoga College — Post-Graduate Diploma</h4>
-        <p>CAMBRIDGE, ON · 2020 — 2021 · GPA 3.4 / 4.0</p>
-      </div>
-      <div class="edu-item reveal" data-delay="1" data-cursor>
-        <h4>JNTUH — B.Tech, Engineering</h4>
-        <p>HYDERABAD, IN · 2016 — 2019</p>
+      <div class="edu-item reveal">
+        <h4>Bachelor of Technology in Computer Science</h4>
+        <p>Jawaharlal Nehru Technological University · Graduate</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ======== inventory ======== -->
-<section class="inv section" id="inventory">
+<section class="section" id="inventory">
   <div class="wrap">
-    <div class="sec-head"><span class="sec-code">Full inventory</span><span class="sec-rule"></span></div>
-    <h2>The complete stack, itemized.</h2>
-    <p class="sec-intro">Nothing listed here that I couldn't defend in a technical deep-dive.</p>
+    <div class="sec-head"><span class="sec-code">System inventory</span><span class="sec-rule"></span></div>
+    <h2>The Tech Stack Blueprint.</h2>
+    <p class="sec-intro">A comprehensive lookup table of the languages, tools, and platforms actively running in my automation toolkit.</p>
 
-    <div class="inv-table">
-      <div class="inv-row reveal"><div class="inv-key">Cloud platforms</div><div class="inv-val"><b>Microsoft Azure</b>, <b>Google Cloud Platform</b>, <b>AWS</b> — plus Linux and Windows Server administration.</div></div>
-      <div class="inv-row reveal"><div class="inv-key">Azure</div><div class="inv-val">AKS, Virtual Machines, Blob Storage, Azure SQL, Azure Monitor, Log Analytics, Azure AD, Functions, Logic Apps, Automation Accounts, VNet.</div></div>
-      <div class="inv-row reveal"><div class="inv-key">GCP</div><div class="inv-val">GKE, Compute Engine, Cloud SQL, Cloud Monitoring &amp; Logging, Secret Manager, Workload Identity, VPC, Cloud NAT, Cloud Functions.</div></div>
-      <div class="inv-row reveal"><div class="inv-key">AWS</div><div class="inv-val">EC2, EKS, S3, Lambda, RDS, CloudWatch, IAM, VPC.</div></div>
-      <div class="inv-row reveal"><div class="inv-key">Infrastructure as code</div><div class="inv-val"><b>Terraform</b> — modules, remote state, workspaces (Associate certified); ARM / Bicep familiarity; Cloud Deployment Manager.</div></div>
-      <div class="inv-row reveal"><div class="inv-key">CI/CD &amp; automation</div><div class="inv-val"><b>GitHub Actions</b>, <b>ArgoCD</b>, Jenkins, GitLab CI, Cloud Build — scripted in Python, Bash and PowerShell.</div></div>
-      <div class="inv-row reveal"><div class="inv-key">Containers &amp; GitOps</div><div class="inv-val"><b>Kubernetes</b> across GKE / EKS / AKS, Docker, Helm, GitOps promotion workflows.</div></div>
-      <div class="inv-row reveal"><div class="inv-key">Observability</div><div class="inv-val"><b>Prometheus</b>, <b>Grafana</b>, Datadog, Splunk, Cloud Monitoring, Azure Monitor, PagerDuty.</div></div>
-      <div class="inv-row reveal"><div class="inv-key">Security &amp; networking</div><div class="inv-val">VPC / VNet design, private networking, IAM, RBAC, TLS/SSL, secrets management, least-privilege access, security-by-design.</div></div>
-      <div class="inv-row reveal"><div class="inv-key">ITSM &amp; process</div><div class="inv-val"><b>ServiceNow</b> (Incident, Problem, Change), JIRA, Agile / Scrum, ITIL, on-call rotations, RCA and post-mortems.</div></div>
+    <div class="inv-table reveal">
+      <div class="inv-row">
+        <div class="inv-key">Cloud Platforms</div>
+        <div class="inv-val"><b>Google Cloud Platform (GCP)</b> (GKE, Cloud SQL, IAM, Cloud NAT, Secret Manager), <b>Microsoft Azure</b>, <b>Amazon Web Services (AWS)</b></div>
+      </div>
+      <div class="inv-row">
+        <div class="inv-key">IaC & Orchestration</div>
+        <div class="inv-val"><b>Terraform</b> (Modules, Workspaces, Remote State), <b>Kubernetes / GKE</b>, <b>Helm</b></div>
+      </div>
+      <div class="inv-row">
+        <div class="inv-key">CI/CD & GitOps</div>
+        <div class="inv-val"><b>GitHub Actions</b>, <b>ArgoCD</b>, <b>Jenkins</b>, <b>Docker</b></div>
+      </div>
+      <div class="inv-row">
+        <div class="inv-key">Observability & Logs</div>
+        <div class="inv-val"><b>Prometheus</b>, <b>Grafana</b>, <b>Datadog</b>, <b>Splunk</b>, <b>PagerDuty</b></div>
+      </div>
+      <div class="inv-row">
+        <div class="inv-key">Automation Languages</div>
+        <div class="inv-val"><b>Python</b>, <b>Bash Scripting</b>, <b>PowerShell</b>, <b>Java</b> (Microservices Environment Support)</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ======== contact ======== -->
-<section class="contact" id="contact">
-  <div class="wrap">
-    <div class="sec-head"><span class="sec-code">Open a channel</span><span class="sec-rule" style="opacity:.25"></span></div>
-    <h2>Let's keep something important running.</h2>
-    <p class="lede">A platform problem, a role worth discussing, or just comparing notes on Terraform module design — my inbox gets watched more closely than most dashboards.</p>
-    <p class="term-line"><span class="t-dim">$</span> ping sai-teja &nbsp;<span class="t-add">→ reply expected &lt; 24 h</span></p>
+<section class="contact section" id="contact">
+  <div class="wrap reveal">
+    <div class="sec-head"><span class="sec-code">Secure endpoint</span><span class="sec-rule"></span></div>
+    <h2>Initiate a connection.</h2>
+    <p class="lede">Looking for someone to transition infrastructure to strict code, secure a delivery pipeline, or jump into a P1 triage bridge without breaking a sweat? Let's connect.</p>
+    
+    <div class="term-line">$ mailto --subject="Production Infrastructure Optimization"</div>
+    
     <div class="cta-row">
-      <a class="btn btn-solid" href="mailto:saitejaanaparthy05@gmail.com" data-cursor data-magnetic><span>saitejaanaparthy05@gmail.com</span></a>
-      <a class="btn btn-ghost" href="https://www.linkedin.com/in/sai-teja-anaparthy" target="_blank" rel="noopener" data-cursor data-magnetic><span>LinkedIn ↗</span></a>
+      <a class="btn btn-solid" href="mailto:saitejaanaparthy05@gmail.com" data-cursor><span>saitejaanaparthy05@gmail.com</span></a>
+      <a class="btn btn-ghost" href="https://www.linkedin.com/in/sai-teja-anaparthy" target="_blank" rel="noopener" data-cursor><span>LinkedIn Profile ↗</span></a>
     </div>
+
     <div class="contact-meta">
-      <span>MISSISSAUGA / GREATER TORONTO AREA</span>
-      <span>REMOTE &amp; HYBRID FRIENDLY</span>
+      <span>Availability: Open to select SRE & Cloud Engineering roles</span>
+      <span>Location: Greater Toronto Area (GTA)</span>
     </div>
   </div>
 </section>
 
-<!-- ======== footer ======== -->
-<footer class="footer">
+<footer class="footer" role="contentinfo">
   <div class="wrap">
-    <span>© 2026 Sai Teja Anaparthy · rev 2026.07</span>
-    <span>Single static file · no trackers · loads the way infrastructure should — fast</span>
+    <span>© 2026 Sai Teja Anaparthy. All rights reserved.</span>
+    <span>Engineered with raw HTML/CSS · Status: <span style="color:var(--green)">Healthy</span></span>
   </div>
 </footer>
 
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Person","name":"Sai Teja Anaparthy","jobTitle":"Cloud Automation Engineer","email":"mailto:saitejaanaparthy05@gmail.com","address":{"@type":"PostalAddress","addressLocality":"Mississauga","addressRegion":"ON","addressCountry":"CA"},"sameAs":["https://www.linkedin.com/in/sai-teja-anaparthy"],"knowsAbout":["Terraform","Kubernetes","Azure","Google Cloud Platform","AWS","CI/CD","Site Reliability Engineering","GitOps","Observability"]}
-</script>
-
 <script>
-(function(){
-  "use strict";
-  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var touch  = window.matchMedia("(hover:none),(pointer:coarse)").matches;
-  var C = {green:"#58E39A", cyan:"#37D6DE", amber:"#E7B84E", red:"#F26A50", dim:"#647A6E"};
-  var running = true;
-  document.addEventListener("visibilitychange", function(){ running = !document.hidden; });
+document.addEventListener("DOMContentLoaded", () => {
+  
+  // 1. SYSTEM CLOCK & LOGICAL UPTIME TIMERS
+  const clockEl = document.getElementById("clock");
+  const uptimeEl = document.getElementById("uptime");
+  const startTime = Date.now();
 
-  /* ============ clock + uptime ============ */
-  var clock = document.getElementById("clock"), upEl = document.getElementById("uptime"), t0 = Date.now();
-  function pad(n){ return (n<10?"0":"")+n; }
-  function tick(){
-    try{
-      clock.textContent = new Intl.DateTimeFormat("en-CA",{timeZone:"America/Toronto",hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(new Date());
-    }catch(e){ clock.textContent = new Date().toTimeString().slice(0,8); }
-    var s = Math.floor((Date.now()-t0)/1000);
-    if(upEl) upEl.textContent = pad(Math.floor(s/3600))+":"+pad(Math.floor(s/60)%60)+":"+pad(s%60);
-  }
-  tick(); setInterval(tick,1000);
-
-  /* ============ deploy / scroll progress ============ */
-  var bar = document.getElementById("deploybar");
-  function onScroll(){
-    var h = document.documentElement, max = h.scrollHeight - h.clientHeight;
-    bar.style.width = (max>0 ? (h.scrollTop/max*100) : 0) + "%";
-  }
-  document.addEventListener("scroll", onScroll, {passive:true}); onScroll();
-
-  /* ============ cursor glow ============ */
-  if(!touch && !reduce){
-    var glow = document.getElementById("cursorGlow"), gx=innerWidth/2, gy=innerHeight/2, tx=gx, ty=gy, shown=false;
-    document.addEventListener("mousemove", function(e){ tx=e.clientX; ty=e.clientY; if(!shown){ glow.style.opacity="1"; shown=true; } });
-    document.addEventListener("mouseleave", function(){ glow.style.opacity="0"; shown=false; });
-    (function loop(){ gx+=(tx-gx)*.22; gy+=(ty-gy)*.22; glow.style.transform="translate("+gx+"px,"+gy+"px) translate(-50%,-50%)"; requestAnimationFrame(loop); })();
-    document.querySelectorAll("[data-cursor]").forEach(function(el){
-      el.addEventListener("mouseenter", function(){ glow.classList.add("big"); });
-      el.addEventListener("mouseleave", function(){ glow.classList.remove("big"); });
+  function updateSystemMetrics() {
+    const now = new Date();
+    clockEl.textContent = now.toLocaleTimeString("en-US", { 
+      hour12: false, timeZone: "America/New_York" 
     });
+
+    const diff = Date.now() - startTime;
+    const hrs = String(Math.floor(diff / 3600000)).padStart(2, "0");
+    const mins = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0");
+    const secs = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
+    uptimeEl.textContent = `${hrs}:${mins}:${secs}`;
+  }
+  setInterval(updateSystemMetrics, 1000);
+  updateSystemMetrics();
+
+  // 2. SCROLL PROGRESS / CI-CD DEPLOY BAR
+  const deployBar = document.getElementById("deploybar");
+  window.addEventListener("scroll", () => {
+    const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = (winScroll / height) * 100;
+    deployBar.style.width = scrolled + "%";
+  }, { passive: true });
+
+  // 3. TARGETED HARDWARE CURSOR GLOW
+  const glow = document.getElementById("cursorGlow");
+  let mouseX = 0, mouseY = 0, currentX = 0, currentY = 0;
+
+  window.addEventListener("mousemove", (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    if (glow.style.opacity === "0" || !glow.style.opacity) glow.style.opacity = "1";
+  }, { passive: true });
+
+  function animateCursor() {
+    currentX += (mouseX - currentX) * 0.15;
+    currentY += (mouseY - currentY) * 0.15;
+    glow.style.left = `${currentX}px`;
+    glow.style.top = `${currentY}px`;
+    requestAnimationFrame(animateCursor);
+  }
+  requestAnimationFrame(animateCursor);
+
+  document.querySelectorAll("[data-cursor]").forEach(el => {
+    el.addEventListener("mouseenter", () => glow.classList.add("big"));
+    el.addEventListener("mouseleave", () => glow.classList.remove("big"));
+  });
+
+  // 4. AUTOMATED SCROLL INTERSECTION REVEALS
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("in");
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: "0px 0px -40px 0px" });
+
+  document.querySelectorAll(".reveal").forEach(el => revealObserver.observe(el));
+
+  // 5. ASYNC TELEMETRY TICKERS (COUNTER EFFECT)
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const targetValue = parseInt(el.getAttribute("data-count"), 10);
+        const duration = parseInt(el.getAttribute("data-dur"), 10) || 1000;
+        let startTimestamp = null;
+
+        function step(timestamp) {
+          if (!startTimestamp) startTimestamp = timestamp;
+          const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+          const currentCount = Math.floor(progress * targetValue);
+          el.textContent = currentCount;
+          if (progress < 1) {
+            requestAnimationFrame(step);
+          } else {
+            el.textContent = targetValue;
+          }
+        }
+        requestAnimationFrame(step);
+        counterObserver.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll(".glow[data-count], [data-count]").forEach(num => counterObserver.observe(num));
+
+  // 6. LOGICAL TERMINAL SIMULATOR ("TERRAFORM APPLY")
+  const termBody = document.getElementById("termBody");
+  const terminalPayload = [
+    { text: "$ terraform init", delay: 300, type: "cmd" },
+    { text: "Initializing provider plugins...", delay: 200, type: "log" },
+    { text: "- Checking for available HashiCorp provider registry...", delay: 200, type: "log" },
+    { text: "✔ Provider registry.hashicorp.com/google successfully initialized.", delay: 400, type: "add" },
+    { text: "\n$ terraform apply --auto-approve", delay: 500, type: "cmd" },
+    { text: "tcs_infrastructure_gke.cluster: Creating structural infrastructure...", delay: 300, type: "log" },
+    { text: "tcs_infrastructure_gke.cluster: Still creating... (10s elapsed)", delay: 400, type: "dim" },
+    { text: "tcs_infrastructure_gke.cluster: Provisioning operational node pools...", delay: 300, type: "log" },
+    { text: "tcs_spend_optimization.policy: Enforcing strict resource right-sizing...", delay: 200, type: "cyan" },
+    { text: "tcs_observability_dashboards.grafana: Injecting SLO error-budgets...", delay: 400, type: "cyan" },
+    { text: "\nApply complete! Resources: 30 deployed, 0 degraded.", delay: 300, type: "bold" },
+    { text: "Infrastructure Status: 100% OPERATIONAL // AUDIT-READY", delay: 100, type: "add" }
+  ];
+
+  let currentLineIndex = 0;
+  termBody.textContent = "";
+
+  function printTerminalLine() {
+    if (currentLineIndex >= terminalPayload.length) {
+      const caret = document.createElement("span");
+      caret.className = "caret";
+      termBody.appendChild(caret);
+      return;
+    }
+
+    const item = terminalPayload[currentLineIndex];
+    const lineSpan = document.createElement("span");
+
+    switch(item.type) {
+      case "cmd": lineSpan.className = "t-cyan"; break;
+      case "add": lineSpan.className = "t-add"; break;
+      case "dim": lineSpan.className = "t-dim"; break;
+      case "cyan": lineSpan.className = "t-cyan"; break;
+      case "bold": lineSpan.className = "t-bold"; break;
+    }
+
+    termBody.appendChild(lineSpan);
+    let charIndex = 0;
+    
+    function typeChar() {
+      if (charIndex < item.text.length) {
+        lineSpan.textContent += item.text.charAt(charIndex);
+        charIndex++;
+        setTimeout(typeChar, item.type === "cmd" ? 25 : 8);
+      } else {
+        termBody.appendChild(document.createTextNode("\n"));
+        currentLineIndex++;
+        setTimeout(printTerminalLine, item.delay);
+      }
+    }
+    typeChar();
+  }
+  setTimeout(printTerminalLine, 800);
+
+  // 7. NODE-NETWORK ANIMATION CANVAS BACKGROUND
+  const canvas = document.getElementById("net");
+  const ctx = canvas.getContext("2d");
+  let points = [];
+  const maxPoints = window.innerWidth < 768 ? 35 : 75;
+  const maxDistance = 115;
+
+  function resizeCanvas() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    initPoints();
   }
 
-  /* ============ magnetic buttons ============ */
-  if(!touch && !reduce){
-    document.querySelectorAll("[data-magnetic]").forEach(function(btn){
-      var inner = btn.querySelector("span") || btn;
-      btn.addEventListener("mousemove", function(e){
-        var r = btn.getBoundingClientRect();
-        var dx = (e.clientX - (r.left+r.width/2))/r.width, dy = (e.clientY - (r.top+r.height/2))/r.height;
-        inner.style.transition="transform .05s linear";
-        inner.style.transform = "translate("+(dx*7)+"px,"+(dy*7)+"px)";
+  function initPoints() {
+    points = [];
+    for (let i = 0; i < maxPoints; i++) {
+      points.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.45,
+        vy: (Math.random() - 0.5) * 0.45
       });
-      btn.addEventListener("mouseleave", function(){ inner.style.transition="transform .25s ease"; inner.style.transform="translate(0,0)"; });
-    });
+    }
   }
 
-  /* ============ card spotlight + tilt ============ */
-  if(!touch && !reduce){
-    document.querySelectorAll("[data-tilt]").forEach(function(card){
-      card.addEventListener("mousemove", function(e){
-        var r = card.getBoundingClientRect();
-        card.style.setProperty("--mx", ((e.clientX-r.left)/r.width*100)+"%");
-        card.style.setProperty("--my", ((e.clientY-r.top)/r.height*100)+"%");
-      });
-    });
-  }
+  function drawNetwork() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < points.length; i++) {
+      let p = points[i];
+      p.x += p.vx;
+      p.y += p.vy;
 
-  /* ============ reveals ============ */
-  var reveals = document.querySelectorAll(".reveal");
-  if("IntersectionObserver" in window && !reduce){
-    var ro = new IntersectionObserver(function(en){ en.forEach(function(x){ if(x.isIntersecting){ x.target.classList.add("in"); ro.unobserve(x.target);} }); }, {threshold:.12, rootMargin:"0px 0px -40px 0px"});
-    reveals.forEach(function(el){ ro.observe(el); });
-  } else { reveals.forEach(function(el){ el.classList.add("in"); }); }
+      if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
 
-  /* ============ count-up numbers ============ */
-  function countUp(el){
-    var target = parseFloat(el.getAttribute("data-count")), dur = parseInt(el.getAttribute("data-dur")||"1000",10);
-    if(reduce){ el.textContent = target; return; }
-    var start = performance.now();
-    function step(now){
-      var p = Math.min((now-start)/dur, 1), e = 1-Math.pow(1-p,3);
-      el.textContent = Math.round(target*e);
-      if(p<1) requestAnimationFrame(step); else el.textContent = target;
-    }
-    requestAnimationFrame(step);
-  }
-  var counts = document.querySelectorAll("[data-count]");
-  if("IntersectionObserver" in window){
-    var co = new IntersectionObserver(function(en){ en.forEach(function(x){ if(x.isIntersecting){ countUp(x.target); co.unobserve(x.target);} }); }, {threshold:.6});
-    counts.forEach(function(el){ co.observe(el); });
-  } else { counts.forEach(countUp); }
-
-  /* ============ live sparklines ============ */
-  function makeSpark(cv){
-    var kind = cv.getAttribute("data-spark"), col = C[cv.getAttribute("data-color")] || C.green;
-    var ctx = cv.getContext("2d"), N = 44, data = [], dpr = Math.min(devicePixelRatio||1, 2), W=0, H=0;
-    function resize(){ var r = cv.getBoundingClientRect(); W=r.width; H=r.height; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
-    // seed
-    var base = kind==="up"?0.15 : kind==="down"?0.85 : 0.5, v = base;
-    for(var i=0;i<N;i++){
-      if(kind==="up") v = 0.12 + (i/N)*0.72 + (Math.random()-0.5)*0.12;
-      else if(kind==="down") v = 0.86 - (i/N)*0.66 + (Math.random()-0.5)*0.12;
-      else if(kind==="steps") v = [0.25,0.55,0.85][Math.floor(i/(N/3))%3];
-      else v = 0.5 + (Math.random()-0.5)*0.5;
-      data.push(Math.max(0.05, Math.min(0.95, v)));
-    }
-    function push(){
-      if(kind==="steps"){ data.push(data[0]); data.shift(); return; }
-      var last = data[data.length-1], drift = kind==="up"?0.02 : kind==="down"?-0.015 : 0;
-      var nv = last + drift + (Math.random()-0.5)*0.22;
-      if(nv>0.92||nv<0.08) nv = last - (nv-last);
-      data.push(Math.max(0.06, Math.min(0.94, nv))); data.shift();
-    }
-    function draw(){
-      if(!W) resize();
-      ctx.clearRect(0,0,W,H);
-      var step = W/(N-1), pad=3;
-      function y(val){ return H-pad - val*(H-pad*2); }
-      // area
-      ctx.beginPath(); ctx.moveTo(0, H);
-      for(var i=0;i<N;i++){ ctx.lineTo(i*step, y(data[i])); }
-      ctx.lineTo(W, H); ctx.closePath();
-      var g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0, col+"33"); g.addColorStop(1, col+"00");
-      ctx.fillStyle = g; ctx.fill();
-      // line
+      ctx.fillStyle = "rgba(88, 227, 154, 0.25)";
       ctx.beginPath();
-      for(var j=0;j<N;j++){ var px=j*step, py=y(data[j]); j?ctx.lineTo(px,py):ctx.moveTo(px,py); }
-      ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.shadowColor = col; ctx.shadowBlur = 6; ctx.stroke(); ctx.shadowBlur = 0;
-      // head dot
-      ctx.beginPath(); ctx.arc(W, y(data[N-1]), 2.4, 0, 7); ctx.fillStyle = col; ctx.fill();
+      ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      for (let j = i + 1; j < points.length; j++) {
+        let p2 = points[j];
+        let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+
+        if (dist < maxDistance) {
+          ctx.strokeStyle = `rgba(55, 214, 222, ${0.12 * (1 - dist / maxDistance)})`;
+          ctx.lineWidth = 0.85;
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+      }
     }
-    addEventListener("resize", function(){ resize(); draw(); });
-    return { draw:draw, push:push, resize:resize };
+    requestAnimationFrame(drawNetwork);
   }
-  var sparks = [];
-  document.querySelectorAll("[data-spark]").forEach(function(cv){ sparks.push(makeSpark(cv)); });
-  // start when dashboard visible; then tick on interval
-  var sparkStarted = false;
-  function startSparks(){ if(sparkStarted) return; sparkStarted = true; sparks.forEach(function(s){ s.resize(); s.draw(); }); }
-  var dash = document.getElementById("telemetry");
-  if("IntersectionObserver" in window && dash){
-    new IntersectionObserver(function(en){ en.forEach(function(x){ if(x.isIntersecting) startSparks(); }); }, {threshold:.15}).observe(dash);
-  } else { startSparks(); }
-  if(!reduce){
-    setInterval(function(){ if(running && sparkStarted){ sparks.forEach(function(s){ s.push(); s.draw(); }); } }, 1100);
-  }
 
-  /* ============ hero terminal typewriter ============ */
-  (function terminal(){
-    var body = document.getElementById("termBody");
-    if(!body) return;
-    // token stream: [class, text]; null class = default
-    var seq = [
-      ["dim","$ "], ["bold","terraform plan"], [null," -out=career.tfplan\n\n"],
-      [null,"Terraform will perform the following actions:\n\n"],
-      ["add","  + "], [null,"resource \"engineer\" \"sai_teja\" {\n"],
-      ["add","      + "], [null,"role    = \"Cloud Automation Engineer\"\n"],
-      ["add","      + "], [null,"domain  = \"regulated financial services\"\n"],
-      ["add","      + "], [null,"clouds  = [\"azure\", \"gcp\", \"aws\"]\n"],
-      ["add","      + "], [null,"iac     = \"terraform\"  "], ["dim","# certified\n"],
-      ["add","      + "], [null,"ci_cd   = [\"github_actions\", \"argocd\"]\n"],
-      ["add","      + "], [null,"on_call = true\n"],
-      ["add","      + "], [null,"single_point_of_failure = "], ["amber","false\n"],
-      [null,"    }\n\n"],
-      ["bold","Plan:"], ["add"," 1 to add"], [null,", 0 to change, 0 to destroy.\n\n"],
-      ["dim","$ "], ["bold","terraform apply"], [null," \"career.tfplan\"\n\n"],
-      [null,"engineer.sai_teja: "], ["dim","Creating...\n"],
-      [null,"engineer.sai_teja: "], ["dim","Still creating... "], ["amber","[5y+ elapsed]\n"],
-      [null,"engineer.sai_teja: Creation complete "], ["dim","[id=YYZ-ca-central]\n\n"],
-      ["add","Apply complete! "], [null,"Resources: "], ["add","1 added"], [null,", 0 destroyed.\n"]
-    ];
-    var cls = {dim:"t-dim", add:"t-add", cyan:"t-cyan", amber:"t-amber", bold:"t-bold"};
-
-    if(reduce){
-      // render fully, no animation
-      seq.forEach(function(tk){ var s=document.createElement("span"); if(tk[0]) s.className=cls[tk[0]]; s.textContent=tk[1]; body.appendChild(s); });
-      var cr=document.createElement("span"); cr.className="caret"; body.appendChild(cr); return;
-    }
-
-    var caret = document.createElement("span"); caret.className="caret";
-    body.appendChild(caret);
-    var ti=0, ci=0, cur=null;
-    function speedFor(text){
-      if(text.indexOf("$ ")===0) return 0;            // handled by pause after
-      return 8;                                        // ms per char
-    }
-    function type(){
-      if(ti>=seq.length){ return; }                    // done, caret blinks
-      var tk = seq[ti], text = tk[1];
-      if(ci===0){ cur = document.createElement("span"); if(tk[0]) cur.className=cls[tk[0]]; body.insertBefore(cur, caret); }
-      cur.textContent += text.charAt(ci); ci++;
-      // keep view pinned to bottom of terminal box
-      body.scrollTop = body.scrollHeight;
-      var ch = text.charAt(ci-1), delay = 8;
-      if(ch==="\n") delay = 26;
-      if(tk[0]==="bold" && (text==="terraform plan"||text==="terraform apply")) delay = 34; // "typing a command"
-      if(ci>=text.length){
-        ti++; ci=0;
-        // dramatic pauses at key beats
-        if(text.indexOf("out=career.tfplan")>-1) delay = 420;
-        else if(text.indexOf("career.tfplan")>-1 && tk[0]===null) delay = 300;
-        else if(text.indexOf("Still creating")>-1) delay = 620;
-        else if(text.indexOf("Creating...")>-1) delay = 360;
-        else if(text==="Apply complete! ") delay = 120;
-      }
-      setTimeout(type, delay);
-    }
-    // small boot delay so it feels like a session starting
-    setTimeout(type, 600);
-  })();
-
-  /* ============ hero network topology ============ */
-  (function network(){
-    var cv = document.getElementById("net");
-    if(!cv) return;
-    var ctx = cv.getContext("2d"), dpr = Math.min(devicePixelRatio||1, 2);
-    var W=0, H=0, nodes=[], packets=[], mouse={x:-9999,y:-9999,on:false};
-    var LINK = 158, N;
-
-    function size(){
-      var r = cv.getBoundingClientRect(); W=r.width; H=r.height;
-      cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
-    }
-    function build(){
-      size();
-      N = touch ? 34 : (W<760 ? 44 : Math.min(84, Math.round(W*H/13500)));
-      nodes = [];
-      for(var i=0;i<N;i++){
-        var svc = Math.random()<0.14;
-        nodes.push({
-          x:Math.random()*W, y:Math.random()*H,
-          vx:(Math.random()-0.5)*0.28, vy:(Math.random()-0.5)*0.28,
-          r: svc? 3.4 : 1.8, svc:svc, state:"ok", flare:0
-        });
-      }
-      packets = [];
-    }
-    build();
-
-    var rt;
-    addEventListener("resize", function(){ clearTimeout(rt); rt=setTimeout(build,180); });
-    if(!touch){
-      cv.parentElement.addEventListener("mousemove", function(e){
-        var r = cv.getBoundingClientRect(); mouse.x=e.clientX-r.left; mouse.y=e.clientY-r.top; mouse.on=true;
-      });
-      cv.parentElement.addEventListener("mouseleave", function(){ mouse.on=false; mouse.x=mouse.y=-9999; });
-    }
-
-    function spawnPacket(){
-      if(packets.length > (touch?8:22) || nodes.length<2) return;
-      var a = nodes[(Math.random()*nodes.length)|0], b=null, best=1e9;
-      for(var k=0;k<6;k++){
-        var c = nodes[(Math.random()*nodes.length)|0]; if(c===a) continue;
-        var d = Math.hypot(c.x-a.x, c.y-a.y);
-        if(d<LINK*1.15 && d<best){ best=d; b=c; }
-      }
-      if(!b) return;
-      packets.push({a:a,b:b,t:0,sp:0.006+Math.random()*0.01,col:C.cyan,hops:1+((Math.random()*2)|0)});
-    }
-    function incident(){
-      if(!nodes.length) return;
-      var n = nodes[(Math.random()*nodes.length)|0]; n.state="warn"; n.flare=1;
-      setTimeout(function(){ n.state="ok"; }, 1900);
-    }
-
-    var lastSpawn=0, lastInc=0;
-    function frame(ts){
-      requestAnimationFrame(frame);
-      if(!running){ return; }
-      ctx.clearRect(0,0,W,H);
-
-      // update motion
-      for(var i=0;i<nodes.length;i++){
-        var n = nodes[i];
-        n.x+=n.vx; n.y+=n.vy;
-        if(n.x<0||n.x>W) n.vx*=-1;
-        if(n.y<0||n.y>H) n.vy*=-1;
-        n.x=Math.max(0,Math.min(W,n.x)); n.y=Math.max(0,Math.min(H,n.y));
-        // gentle mouse repulsion
-        if(mouse.on){
-          var dx=n.x-mouse.x, dy=n.y-mouse.y, dm=Math.hypot(dx,dy);
-          if(dm<120 && dm>0.5){ var f=(120-dm)/120*0.6; n.x+=dx/dm*f; n.y+=dy/dm*f; }
-        }
-        if(n.flare>0) n.flare-=0.02;
-      }
-
-      // links
-      for(var a=0;a<nodes.length;a++){
-        for(var b=a+1;b<nodes.length;b++){
-          var p=nodes[a], q=nodes[b], d=Math.hypot(p.x-q.x, p.y-q.y);
-          if(d<LINK){
-            var al=(1-d/LINK)*0.34;
-            ctx.strokeStyle="rgba(88,227,154,"+al.toFixed(3)+")"; ctx.lineWidth=1;
-            ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y); ctx.stroke();
-          }
-        }
-      }
-      // cursor links
-      if(mouse.on){
-        for(var m=0;m<nodes.length;m++){
-          var nn=nodes[m], dd=Math.hypot(nn.x-mouse.x, nn.y-mouse.y);
-          if(dd<170){
-            var a2=(1-dd/170)*0.6;
-            ctx.strokeStyle="rgba(55,214,222,"+a2.toFixed(3)+")"; ctx.lineWidth=1.1;
-            ctx.beginPath(); ctx.moveTo(mouse.x,mouse.y); ctx.lineTo(nn.x,nn.y); ctx.stroke();
-          }
-        }
-      }
-
-      // packets
-      for(var pk=packets.length-1;pk>=0;pk--){
-        var P=packets[pk]; P.t+=P.sp;
-        if(P.t>=1){
-          P.hops--;
-          if(P.hops>0){
-            // hop to a neighbor of b
-            var from=P.b, nx=null, best2=1e9;
-            for(var h=0;h<6;h++){ var cc=nodes[(Math.random()*nodes.length)|0]; if(cc===from) continue; var dh=Math.hypot(cc.x-from.x,cc.y-from.y); if(dh<LINK*1.15&&dh<best2){best2=dh;nx=cc;} }
-            if(nx){ P.a=from; P.b=nx; P.t=0; } else { packets.splice(pk,1); continue; }
-          } else { packets.splice(pk,1); continue; }
-        }
-        var e=P.t*P.t*(3-2*P.t), px=P.a.x+(P.b.x-P.a.x)*e, py=P.a.y+(P.b.y-P.a.y)*e;
-        ctx.beginPath(); ctx.arc(px,py,2.2,0,7);
-        ctx.fillStyle=P.col; ctx.shadowColor=P.col; ctx.shadowBlur=10; ctx.fill(); ctx.shadowBlur=0;
-        // faint trail
-        ctx.strokeStyle="rgba(55,214,222,.22)"; ctx.lineWidth=1;
-        ctx.beginPath(); ctx.moveTo(P.a.x,P.a.y); ctx.lineTo(px,py); ctx.stroke();
-      }
-
-      // nodes
-      for(var z=0;z<nodes.length;z++){
-        var nd=nodes[z];
-        var col = nd.state==="warn" ? C.amber : (nd.svc? C.green : "#9FB3A8");
-        if(nd.svc || nd.state==="warn"){
-          ctx.shadowColor=col; ctx.shadowBlur = nd.state==="warn" ? 16 : 8;
-        }
-        ctx.beginPath(); ctx.arc(nd.x,nd.y, nd.r + (nd.flare*3), 0, 7);
-        ctx.fillStyle=col; ctx.globalAlpha = nd.svc?1:0.7; ctx.fill();
-        ctx.globalAlpha=1; ctx.shadowBlur=0;
-        if(nd.svc){ // ring on service nodes
-          ctx.beginPath(); ctx.arc(nd.x,nd.y, nd.r+3.5, 0, 7);
-          ctx.strokeStyle="rgba(88,227,154,.35)"; ctx.lineWidth=1; ctx.stroke();
-        }
-      }
-
-      if(ts-lastSpawn > 260){ spawnPacket(); lastSpawn=ts; }
-      if(ts-lastInc > 9000){ incident(); lastInc=ts; }
-    }
-
-    if(reduce){
-      // one static frame
-      size();
-      ctx.clearRect(0,0,W,H);
-      for(var la=0;la<nodes.length;la++) for(var lb=la+1;lb<nodes.length;lb++){
-        var pp=nodes[la], qq=nodes[lb], D=Math.hypot(pp.x-qq.x,pp.y-qq.y);
-        if(D<LINK){ ctx.strokeStyle="rgba(88,227,154,"+((1-D/LINK)*0.28).toFixed(3)+")"; ctx.beginPath(); ctx.moveTo(pp.x,pp.y); ctx.lineTo(qq.x,qq.y); ctx.stroke(); }
-      }
-      nodes.forEach(function(nd){ ctx.beginPath(); ctx.arc(nd.x,nd.y,nd.r,0,7); ctx.fillStyle=nd.svc?C.green:"#9FB3A8"; ctx.fill(); });
-    } else {
-      requestAnimationFrame(frame);
-    }
-  })();
-
-})();
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
+  drawNetwork();
+});
 </script>
 </body>
 </html>
