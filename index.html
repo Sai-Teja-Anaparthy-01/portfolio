@@ -112,7 +112,7 @@ a:focus-visible,button:focus-visible{outline:2.5px solid var(--green);outline-of
 .eyebrow::before{content:"";width:26px;height:2px;background:var(--green);flex:none;box-shadow:0 0 8px var(--glow-green)}
 
 /* --- the NAME: the hero thesis --- */
-.name-wrap{position:relative;display:inline-block}
+.name-wrap{position:relative;display:inline-block;max-width:100%}
 .name-wrap::before{content:"";position:absolute;left:-8%;top:-40%;width:70%;height:180%;z-index:-1;pointer-events:none;
   background:conic-gradient(from 0deg,rgba(88,227,154,.16),rgba(55,214,222,.10),transparent 45%,rgba(88,227,154,.14));
   filter:blur(46px);border-radius:50%;opacity:.9;animation:spin 26s linear infinite}
@@ -120,12 +120,16 @@ a:focus-visible,button:focus-visible{outline:2.5px solid var(--green);outline-of
 .name{font-variation-settings:"wdth" 120,"wght" 830;
   font-size:clamp(2.75rem,7.2vw,5.35rem);line-height:.98;letter-spacing:-.02em;text-transform:uppercase;
   color:#F3F8F4;text-shadow:0 0 34px rgba(88,227,154,.22),0 0 70px rgba(55,214,222,.12);
-  text-wrap:balance;margin-bottom:8px}
+  margin-bottom:8px}
+/* FIX: each name line is its own block, forced to stay on one row (white-space:nowrap),
+   so "Sai Teja" and "Anaparthy" each render as a single clean line instead of the
+   browser wrapping mid-word between the per-letter animation spans. */
+.name .line{display:block;white-space:nowrap}
 .name .ltr{display:inline-block;will-change:transform,opacity}
+.name .sp{display:inline-block;width:.3em}
 .name.anim .ltr{opacity:0;transform:translateY(.42em) rotateX(-55deg);transform-origin:bottom center;
   transition:opacity .5s ease,transform .6s var(--ease)}
 .name.anim.in .ltr{opacity:1;transform:none}
-.name .sp{display:inline-block;width:.3em}
 
 .role-line{font-family:var(--mono);font-size:clamp(.82rem,1.5vw,1rem);letter-spacing:.1em;color:var(--cyan);
   margin-top:6px;margin-bottom:22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -345,7 +349,7 @@ section[id],header[id]{scroll-margin-top:116px}
     <div>
       <p class="eyebrow">Portfolio — Cloud Automation Engineer</p>
       <div class="name-wrap">
-        <h1 class="name anim" id="name" aria-label="Sai Teja Anaparthy"><span class="name-text" aria-hidden="true">Sai Teja Anaparthy</span></h1>
+        <h1 class="name anim" id="name" aria-label="Sai Teja Anaparthy"><span class="name-text" aria-hidden="true">Sai Teja|Anaparthy</span></h1>
       </div>
       <p class="role-line"><span class="bar"></span> Cloud Automation Engineer <span style="color:var(--ink-4)">·</span> Azure · Terraform · CI/CD · SRE</p>
       <p class="tagline">High-stakes platforms don't get <span class="no">second chances.</span></p>
@@ -636,18 +640,32 @@ section[id],header[id]{scroll-margin-top:116px}
   }
   tick(); setInterval(tick,1000);
 
-  /* ============ name: assemble letters on load ============ */
+  /* ============ name: assemble letters on load, one word-group per line ============ */
   (function name(){
     var h=document.getElementById("name"); if(!h) return;
     var txt=h.querySelector(".name-text"); if(!txt) return;
-    var str=txt.textContent; h.innerHTML="";
-    var frag=document.createDocumentFragment(), idx=0;
-    str.split("").forEach(function(ch){
-      if(ch===" "){ var sp=document.createElement("span"); sp.className="sp"; sp.setAttribute("aria-hidden","true"); frag.appendChild(sp); return; }
-      var s=document.createElement("span"); s.className="ltr"; s.textContent=ch; s.setAttribute("aria-hidden","true");
-      s.style.transitionDelay=(0.28+idx*0.045)+"s"; idx++; frag.appendChild(s);
+    // "|" marks a hard line break between groups (e.g. "Sai Teja" | "Anaparthy").
+    // Within a group, letters stay glued together as nowrap so words never split mid-way.
+    var lines=txt.textContent.split("|");
+    h.innerHTML="";
+    var idx=0;
+    lines.forEach(function(lineStr, li){
+      var lineEl=document.createElement("span");
+      lineEl.className="line";
+      lineStr.split("").forEach(function(ch){
+        if(ch===" "){
+          var sp=document.createElement("span");
+          sp.className="sp"; sp.setAttribute("aria-hidden","true");
+          lineEl.appendChild(sp);
+          return;
+        }
+        var s=document.createElement("span");
+        s.className="ltr"; s.textContent=ch; s.setAttribute("aria-hidden","true");
+        s.style.transitionDelay=(0.28+idx*0.045)+"s"; idx++;
+        lineEl.appendChild(s);
+      });
+      h.appendChild(lineEl);
     });
-    h.appendChild(frag);
     // trigger
     raf(function(){ raf(function(){ h.classList.add("in"); }); });
   })();
